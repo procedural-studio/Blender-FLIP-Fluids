@@ -1,0 +1,32 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    cmake \
+    python3 \
+    python3-pip \
+    libalembic-dev \
+    libimath-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/flipfluids
+
+# Clone repo
+RUN git clone https://github.com/rlguy/Blender-FLIP-Fluids.git .
+
+# Ensure script is executable
+RUN chmod +x build.py
+
+# Build Linux addon
+RUN python3 build.py \
+    --cmake-path /usr/bin/cmake \
+    --make-path /usr/bin/make
+
+# Expose build artifacts
+VOLUME /opt/flipfluids/build/bl_flip_fluids
+
+CMD ["bash"]
