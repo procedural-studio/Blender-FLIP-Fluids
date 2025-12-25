@@ -1,0 +1,37 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install MinGW + build tools
+RUN apt-get update && apt-get install -y \
+    git \
+    cmake \
+    python3 \
+    python3-pip \
+    mingw-w64 \
+    g++-mingw-w64-x86-64 \
+    libalembic-dev \
+    libimath-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/flipfluids
+
+# Clone repo
+RUN git clone https://github.com/rlguy/Blender-FLIP-Fluids.git .
+
+RUN chmod +x build.py
+
+# Environment variables for cross-compilation
+ENV CC=x86_64-w64-mingw32-gcc
+ENV CXX=x86_64-w64-mingw32-g++
+ENV CMAKE_SYSTEM_NAME=Windows
+
+# Build Windows addon
+RUN python3 build.py \
+    --cmake-path /usr/bin/cmake \
+    --make-path /usr/bin/make \
+    --target windows
+
+VOLUME /opt/flipfluids/build/bl_flip_fluids
+
+CMD ["bash"]
